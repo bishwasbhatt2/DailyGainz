@@ -5,7 +5,10 @@
 - Firebase account for using Firestore and Authentication.
 - A GitHub account for collaboration.
 
-## Step 1: Clone the Repository
+## Step 1: Fork the Repository
+Make sure your forked repository is all synced with the upstream (main repository)
+
+## Step 2: Clone the Repository
 Clone the repository to your local machine:
 ```bash
 git clone https://github.com/bishwasbhatt2/DailyGainz.git
@@ -18,7 +21,7 @@ cd DailyGainz
 npm install
 ```
 
-## Step 3: Set Up Firebase
+## Step 3: Set Up Firebase (don't do this unless you are the owner of the project)
 - Create a Firebase project in the [Firebase Console](https://console.firebase.google.com/).
 - Add a web app to your Firebase project and get the Firebase configuration object.
 - Update the `firebase.js` file in the project with your Firebase credentials:
@@ -46,7 +49,7 @@ The app should be accessible at `http://localhost:5173`.
   ```bash
   git pull origin main
   ```
-- **Branching**: Create a new branch for your feature or bug fix:
+- **Branching**: Create a new branch for your feature or bug fix (optiona):
   ```bash
   git checkout -b feature-branch-name
   ```
@@ -58,7 +61,7 @@ The app should be accessible at `http://localhost:5173`.
   ```
 - **Create Pull Request**: Go to GitHub and create a Pull Request to merge your changes to the `main` branch.
 
-## Step 6: Firebase Rules for Development
+## Step 6: Firebase Rules for Development (Only for project owner)
 To allow everyone to work with Firestore during development, use the following rules:
 ```javascript
 rules_version = '2';
