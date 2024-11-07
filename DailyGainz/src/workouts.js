@@ -1,23 +1,42 @@
-// src/workouts.js
-
 const workouts = {
-  weight_loss: {
-    Easy: ['20-minute brisk walk', '15 bodyweight squats', '10 push-ups'],
-    Medium: ['30-minute run', '20 burpees', '15 mountain climbers'],
-    Hard: ['40-minute HIIT workout', '25 burpees', '20 jump squats'],
-  },
-  muscle_gain: {
-    Easy: ['10 push-ups', '10 tricep dips', '10 bicep curls with light weights'],
-    Medium: ['15 bench presses', '20 dumbbell rows', '15 squats with weights'],
-    Hard: ['20 bench presses', '25 dumbbell rows', '20 deadlifts'],
-  },
-  endurance: {
-    Easy: ['15-minute cycling', '20-second plank', '20 jumping jacks'],
-    Medium: ['30-minute swimming', '1-minute plank', '30 jump lunges'],
-    Hard: ['45-minute running', '2-minute plank', '40 burpees'],
-  },
+  Easy: [
+    '10 push-ups', 
+    '20 sit-ups', 
+    '15-minute jog', 
+    '30-second plank', 
+    '10 squats', 
+    '30 seconds high knees', 
+    '10 leg raises', 
+    '15 crunches', 
+    '10 lunges (both legs)', 
+    '15-second side plank (each arm)'
+  ],
+  Medium: [
+    '20 push-ups', 
+    '30 sit-ups', 
+    '30-minute jog', 
+    '60-second plank', 
+    '10 burpees', 
+    '20 squats', 
+    '20 lunges (both legs)', 
+    '30-second side plank (each arm)', 
+    '60-second jumping jacks', 
+    '100 jump ropes'
+  ],
+  Hard: [
+    '40-minute HIIT workout', 
+    '25 burpees', 
+    '20 jump squats', 
+    '200-300 jump ropes', 
+    '90-second plank', 
+    '50 sit-ups', 
+    '30 push-ups', 
+    '45-minute jog', 
+    '25 burpees', 
+    '10 pull-ups'
+  ]
 };
 
-export const getWorkouts = (goalType, difficulty) => {
-  return workouts[goalType]?.[difficulty] || [];
+export const getWorkouts = (difficulty) => {
+  return workouts[difficulty] || [];
 };
