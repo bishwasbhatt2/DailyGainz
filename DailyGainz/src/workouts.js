@@ -21,7 +21,8 @@ const workouts = {
     '20 lunges (both legs)', 
     '30-second side plank (each arm)', 
     '60-second jumping jacks', 
-    '100 jump ropes'
+    '100 jump ropes',
+    '5 pull-ups'
   ],
   Hard: [
     '40-minute HIIT workout', 
