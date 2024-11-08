@@ -9,10 +9,10 @@ import { Box, Paper, Typography, Button, Select, MenuItem, FormControl, InputLab
 
 const Dashboard = () => {
   const [user, setUser] = useState(null);
-  const [goalType, setGoalType] = useState('');
   const [difficulty, setDifficulty] = useState('');
   const [goal, setGoal] = useState(null);
   const [error, setError] = useState('');
+  const [workouts, setWorkouts] = useState([]); // State for workout recommendations
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -36,11 +36,15 @@ const Dashboard = () => {
     if (user) {
       try {
         const goalRef = doc(db, 'goals', user.uid);
-        await setDoc(goalRef, { goalType, difficulty });
-        setGoal({ goalType, difficulty });
-        setGoalType(''); // Clear goalType after setting goal
+        await setDoc(goalRef, { difficulty });
+        setGoal({ difficulty });
         setDifficulty(''); // Clear difficulty after setting goal
         setError('');
+
+        // Generate a new workout recommendation
+        const selectedWorkout = getWorkouts(difficulty);
+        setWorkouts(selectedWorkout); // Set workout to be displayed
+
       } catch (err) {
         setError('Error setting goal. Please try again.');
       }
@@ -51,8 +55,6 @@ const Dashboard = () => {
     await signOut(auth);
     navigate('/login');
   };
-
-  const workouts = goal ? getWorkouts(goal.goalType, goal.difficulty) : [];
 
   return (
     <Box
@@ -101,23 +103,10 @@ const Dashboard = () => {
           </Typography>
           {goal && (
             <Typography variant="body2" color="textSecondary" gutterBottom>
-              Current Goal: {goal.goalType} - Difficulty: {goal.difficulty}
+              Current Difficulty: {goal.difficulty}
             </Typography>
           )}
           <Box component="form" onSubmit={handleGoalSubmit} sx={{ mt: 2 }}>
-            <FormControl fullWidth margin="normal">
-              <InputLabel>Goal Type</InputLabel>
-              <Select
-                value={goalType}
-                onChange={(e) => setGoalType(e.target.value)}
-                label="Goal Type"
-                required
-              >
-                <MenuItem value="weight_loss">Weight Loss</MenuItem>
-                <MenuItem value="muscle_gain">Muscle Gain</MenuItem>
-                <MenuItem value="endurance">Endurance</MenuItem>
-              </Select>
-            </FormControl>
             <FormControl fullWidth margin="normal">
               <InputLabel>Difficulty Level</InputLabel>
               <Select
@@ -145,7 +134,7 @@ const Dashboard = () => {
         {goal && workouts.length > 0 && (
           <Box sx={{ mt: 4 }}>
             <Typography variant="h5" gutterBottom>
-              Recommended Workouts
+              Recommended Workout
             </Typography>
             <List>
               {workouts.map((workout, index) => (
