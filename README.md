@@ -11,11 +11,11 @@ Current Features:
 * Storing user goals in FireBaseDB
 
 Tools: 
-Frontend: React
-Backend: Firebase
-Project Management Tool: Github Issues
-Source-Control: GitHub
-Deployment: GitHub Actions
+* Frontend: React
+* Backend: Firebase
+* Project Management Tool: Github Issues
+* Source-Control: GitHub
+* Deployment: GitHub Actions
 
 Stretch Goals:
 Gamification like badges
