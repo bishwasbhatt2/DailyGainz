@@ -13,7 +13,7 @@ Current Features:
 Tools: 
 Frontend: React
 Backend: Firebase
-Project Management Tool: Jira
+Project Management Tool: Github Issues
 Source-Control: GitHub
 Deployment: GitHub Actions
 
