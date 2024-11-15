@@ -32,7 +32,7 @@ Status: ❌ Not Implemented. We need to implement a leaderboard that tracks prog
 
 7-	Custom Workout Creation
 As a fitness expert, I want to create and share custom workout challenges so that I can challenge other users and offer tailored fitness routines.
-Status: ❌ Not Implemented. Currently, workouts are pre-defined based on user goals and difficulty levels. We need to add the ability for experts to create custom workouts.
+Status: ✅ Implemented. Custom workout creation functionality is implemented (in a barebones manner). You can add a workout type, reps, and sets, and push it to Firebase. 
 
 
 8-	In-App Messaging
