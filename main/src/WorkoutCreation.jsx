@@ -10,7 +10,7 @@ import {
     IconButton,
 } from '@mui/material';
 import { db, auth } from './firebase';
-import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
+import { doc, setDoc, arrayUnion } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -51,7 +51,7 @@ const WorkoutCreation = () => {
                 timestamp: new Date(),
             };
             try {
-                await updateDoc(workoutRef, {
+                await setDoc(workoutRef, {
                     workouts: arrayUnion(workout),
                 });
                 navigate('/dashboard');
