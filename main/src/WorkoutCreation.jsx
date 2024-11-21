@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Box, Typography, TextField, Button, Paper, List, ListItem, IconButton } from '@mui/material';
+import {Box,Typography,TextField,Button,Paper,List,ListItem,IconButton} from '@mui/material';
 import { db, auth } from './firebase';
-import { doc, setDoc, updateDoc, arrayUnion } from 'firebase/firestore';
+import { doc, setDoc, arrayUnion } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -10,40 +10,54 @@ const WorkoutCreation = () => {
     const [workoutName, setWorkoutName] = useState('');
     const [reps, setReps] = useState('');
     const [sets, setSets] = useState('');
-    const [workouts, setWorkouts] = useState([]);
+    const [exercisesInWorkout, setExercisesInWorkout] = useState([]);
+    const [workoutTitle, setWorkoutTitle] = useState(''); // Optional: Add a workout title
     const navigate = useNavigate();
 
-    // Add workout to local state
-    const handleAddWorkout = () => {
+    // Add exercise to the current workout
+    const handleAddExercise = () => {
         if (workoutName && reps && sets) {
-            setWorkouts([...workouts, { workoutName, reps: parseInt(reps), sets: parseInt(sets) }]);
+            setExercisesInWorkout([
+                ...exercisesInWorkout,
+                {
+                    workoutName,
+                    reps: parseInt(reps),
+                    sets: parseInt(sets),
+                },
+            ]);
             setWorkoutName('');
             setReps('');
             setSets('');
         }
     };
 
+    // Save the current workout to the database
     const handleSaveWorkouts = async () => {
         const user = auth.currentUser;
-        console.log("Current user:", user ? user.uid : "No user found");
-        if (user && workouts.length > 0) {
+        if (user && exercisesInWorkout.length > 0) {
             const workoutRef = doc(db, 'workouts', user.uid);
+            const workout = {
+                title: workoutTitle || `Workout ${new Date().toLocaleDateString()}`,
+                exercises: exercisesInWorkout,
+                timestamp: new Date(),
+            };
             try {
-                await setDoc(workoutRef, { workoutList: workouts }, { merge: true });
+                await setDoc(workoutRef, {
+                    workouts: arrayUnion(workout),
+                });
                 navigate('/dashboard');
             } catch (error) {
                 console.error('Error saving workout:', error);
             }
         } else {
-            console.error("User is not authenticated or no workouts to save.");
+            console.error('User is not authenticated or no exercises to save.');
         }
     };
 
-
-    // Remove a workout from the local state
-    const handleRemoveWorkout = (index) => {
-        const updatedWorkouts = workouts.filter((_, i) => i !== index);
-        setWorkouts(updatedWorkouts);
+    // Remove an exercise from the current workout
+    const handleRemoveExercise = (index) => {
+        const updatedExercises = exercisesInWorkout.filter((_, i) => i !== index);
+        setExercisesInWorkout(updatedExercises);
     };
 
     return (
@@ -73,9 +87,19 @@ const WorkoutCreation = () => {
                     Create Your Workout
                 </Typography>
 
+                {/* Optional: Add a workout title input */}
+                <TextField
+                    label="Workout Title"
+                    variant="outlined"
+                    value={workoutTitle}
+                    onChange={(e) => setWorkoutTitle(e.target.value)}
+                    fullWidth
+                    sx={{ mt: 2 }}
+                />
+
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
                     <TextField
-                        label="Workout Name"
+                        label="Exercise Name"
                         variant="outlined"
                         value={workoutName}
                         onChange={(e) => setWorkoutName(e.target.value)}
@@ -101,7 +125,7 @@ const WorkoutCreation = () => {
                         variant="contained"
                         color="primary"
                         startIcon={<AddIcon />}
-                        onClick={handleAddWorkout}
+                        onClick={handleAddExercise}
                         fullWidth
                     >
                         Add Exercise
@@ -110,15 +134,18 @@ const WorkoutCreation = () => {
 
                 <Box sx={{ mt: 4 }}>
                     <Typography variant="h5" gutterBottom>
-                        Workout List
+                        Exercise List
                     </Typography>
                     <List>
-                        {workouts.map((workout, index) => (
+                        {exercisesInWorkout.map((exercise, index) => (
                             <ListItem key={index} sx={{ justifyContent: 'space-between' }}>
                                 <Typography variant="body1">
-                                    {workout.workoutName} - {workout.reps} reps, {workout.sets} sets
+                                    {exercise.workoutName} - {exercise.reps} reps, {exercise.sets} sets
                                 </Typography>
-                                <IconButton onClick={() => handleRemoveWorkout(index)} color="secondary">
+                                <IconButton
+                                    onClick={() => handleRemoveExercise(index)}
+                                    color="secondary"
+                                >
                                     <DeleteIcon />
                                 </IconButton>
                             </ListItem>
