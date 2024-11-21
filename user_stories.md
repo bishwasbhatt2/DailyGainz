@@ -48,3 +48,7 @@ Status: ❌ Not Implemented. We need to add a gamification feature that rewards 
 10-	Bookmark Favorite Activities
 As a user, I want to be able to save activities so that I can easily return to my favorite activities.
 Status: ❌ Not Implemented. We need to add the ability to bookmark or save specific workouts.
+
+11 - Dark Mode
+As a user, I want to be able to enable a dark mode on the application, so that I can work out at night without straining my eyes. 
+Status: ❌ Not Implemented. We need to add the ability to toggle dark mode. 
