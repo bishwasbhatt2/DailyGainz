@@ -92,7 +92,7 @@ cd ..
 ```
 
 - **Create Pull Request**: Go to GitHub and create a Pull Request to merge your changes to the `main` branch.
-- Read the PullRequest.md for template
+- Note: Make sure to follow the Pull Request template that is shown when creating a Pull Request
 
 
 ## Step 7: Firebase Rules for Development (Only for project owner)
