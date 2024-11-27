@@ -5,9 +5,10 @@ import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { auth, db } from './firebase';
 import { setDoc, doc, getDoc } from 'firebase/firestore';
 import { getWorkouts } from './workouts';
-import { Box, Paper, Typography, Button, Select, MenuItem, FormControl, InputLabel, Alert, List, ListItem } from '@mui/material';
+import { Box, Paper, Typography, Button, Select, MenuItem, FormControl, InputLabel, Alert, List, ListItem, useTheme } from '@mui/material';
 
 const Dashboard = () => {
+  const theme = useTheme(); // Access theme for dark/light mode styles
   const [user, setUser] = useState(null);
   const [difficulty, setDifficulty] = useState('');
   const [goal, setGoal] = useState(null);
@@ -44,7 +45,6 @@ const Dashboard = () => {
         // Generate a new workout recommendation
         const selectedWorkout = getWorkouts(difficulty);
         setWorkouts(selectedWorkout); // Set workout to be displayed
-
       } catch (err) {
         setError('Error setting goal. Please try again.');
       }
@@ -64,7 +64,7 @@ const Dashboard = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#f7f9fc',
+        backgroundColor: theme.palette.background.default,
         padding: '1rem',
       }}
     >
@@ -75,7 +75,7 @@ const Dashboard = () => {
           maxWidth: '600px',
           padding: '2rem',
           borderRadius: '10px',
-          backgroundColor: '#ffffff',
+          backgroundColor: theme.palette.background.paper,
           textAlign: 'center',
         }}
       >
@@ -83,7 +83,7 @@ const Dashboard = () => {
           Welcome to Your Dashboard
         </Typography>
         {user && (
-          <Typography variant="body1" color="textSecondary" gutterBottom>
+          <Typography variant="body1" color="text.secondary" gutterBottom>
             Logged in as: {user.email}
           </Typography>
         )}
@@ -105,7 +105,7 @@ const Dashboard = () => {
             Set Your Fitness Goal
           </Typography>
           {goal && (
-            <Typography variant="body2" color="textSecondary" gutterBottom>
+            <Typography variant="body2" color="text.secondary" gutterBottom>
               Current Difficulty: {goal.difficulty}
             </Typography>
           )}

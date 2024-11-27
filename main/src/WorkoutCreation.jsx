@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import {Box,Typography,TextField,Button,Paper,List,ListItem,IconButton} from '@mui/material';
+import { Box, Typography, TextField, Button, Paper, List, ListItem, IconButton, useTheme } from '@mui/material';
 import { db, auth } from './firebase';
 import { doc, setDoc, arrayUnion } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
@@ -7,6 +7,7 @@ import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 
 const WorkoutCreation = () => {
+    const theme = useTheme(); // Access the current theme for dark/light mode support
     const [workoutName, setWorkoutName] = useState('');
     const [reps, setReps] = useState('');
     const [sets, setSets] = useState('');
@@ -68,7 +69,7 @@ const WorkoutCreation = () => {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                backgroundColor: '#f7f9fc',
+                backgroundColor: theme.palette.background.default, // Adaptable background color
                 padding: '1rem',
             }}
         >
@@ -79,7 +80,7 @@ const WorkoutCreation = () => {
                     maxWidth: '600px',
                     padding: '2rem',
                     borderRadius: '10px',
-                    backgroundColor: '#ffffff',
+                    backgroundColor: theme.palette.background.paper, // Adaptable card background color
                     textAlign: 'center',
                 }}
             >
@@ -104,6 +105,7 @@ const WorkoutCreation = () => {
                         value={workoutName}
                         onChange={(e) => setWorkoutName(e.target.value)}
                         fullWidth
+                        sx={{ backgroundColor: theme.palette.background.paper }}
                     />
                     <TextField
                         label="Reps"
@@ -112,6 +114,7 @@ const WorkoutCreation = () => {
                         value={reps}
                         onChange={(e) => setReps(e.target.value)}
                         fullWidth
+                        sx={{ backgroundColor: theme.palette.background.paper }}
                     />
                     <TextField
                         label="Sets"
@@ -120,6 +123,7 @@ const WorkoutCreation = () => {
                         value={sets}
                         onChange={(e) => setSets(e.target.value)}
                         fullWidth
+                        sx={{ backgroundColor: theme.palette.background.paper }}
                     />
                     <Button
                         variant="contained"

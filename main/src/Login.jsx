@@ -3,9 +3,10 @@ import React, { useState } from 'react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from './firebase';
 import { useNavigate } from 'react-router-dom';
-import { TextField, Button, Typography, Box, Paper, Alert } from '@mui/material';
+import { TextField, Button, Typography, Box, Paper, Alert, useTheme } from '@mui/material';
 
 const Login = () => {
+  const theme = useTheme();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -33,7 +34,7 @@ const Login = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#f7f9fc', // Light, clean background color
+        backgroundColor: theme.palette.background.default, // Adaptable background color
         padding: '1rem',
       }}
     >
@@ -45,13 +46,13 @@ const Login = () => {
           padding: '2rem',
           borderRadius: '10px',
           textAlign: 'center',
-          backgroundColor: '#ffffff', // Sleek white background for the card
+          backgroundColor: theme.palette.background.paper, // Adaptable background color
         }}
       >
         <Typography variant="h4" color="primary" gutterBottom>
           Welcome Back
         </Typography>
-        <Typography variant="subtitle1" color="textSecondary" gutterBottom>
+        <Typography variant="subtitle1" color="text.secondary" gutterBottom>
           Please login to continue
         </Typography>
         <Box component="form" onSubmit={handleLogin} sx={{ mt: 3 }}>
@@ -62,6 +63,7 @@ const Login = () => {
             margin="normal"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            sx={{ backgroundColor: theme.palette.background.paper }}
           />
           <TextField
             label="Password"
@@ -71,6 +73,7 @@ const Login = () => {
             margin="normal"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            sx={{ backgroundColor: theme.palette.background.paper }}
           />
           <Box
             sx={{
