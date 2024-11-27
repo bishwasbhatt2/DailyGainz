@@ -1,6 +1,6 @@
 // src/Leaderboard.jsx
 import React from 'react';
-import { Box, Paper, Typography, Button, List, ListItem, ListItemText, ListItemIcon } from '@mui/material';
+import { Box, Paper, Typography, Button, List, ListItem, ListItemText, ListItemIcon, useTheme } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 
@@ -33,6 +33,7 @@ const fakeLeaderboardData = [
 ];
 
 const Leaderboard = () => {
+    const theme = useTheme();
     const navigate = useNavigate();
 
     return (
@@ -43,7 +44,7 @@ const Leaderboard = () => {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                backgroundColor: '#f7f9fc',
+                backgroundColor: theme.palette.background.default,
                 padding: '1rem',
             }}
         >
@@ -54,7 +55,7 @@ const Leaderboard = () => {
                     maxWidth: '600px',
                     padding: '2rem',
                     borderRadius: '10px',
-                    backgroundColor: '#ffffff',
+                    backgroundColor: theme.palette.background.paper,
                     textAlign: 'center',
                 }}
             >
@@ -81,6 +82,9 @@ const Leaderboard = () => {
                             <ListItemText
                                 primary={`${index + 1}. ${entry.name}`}
                                 secondary={`Points: ${entry.points}`}
+                                sx={{
+                                    color: theme.palette.text.primary,
+                                }}
                             />
                         </ListItem>
                     ))}

@@ -3,9 +3,10 @@ import React, { useState } from 'react';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth } from './firebase';
 import { useNavigate } from 'react-router-dom';
-import { TextField, Button, Typography, Box, Paper, Alert } from '@mui/material';
+import { TextField, Button, Typography, Box, Paper, Alert, useTheme } from '@mui/material';
 
 const Signup = () => {
+  const theme = useTheme(); // Access the current theme for dark/light mode support
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -30,7 +31,7 @@ const Signup = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#f7f9fc',
+        backgroundColor: theme.palette.background.default, // Adaptable background color
         padding: '1rem',
       }}
     >
@@ -42,13 +43,13 @@ const Signup = () => {
           padding: '2rem',
           borderRadius: '10px',
           textAlign: 'center',
-          backgroundColor: '#ffffff',
+          backgroundColor: theme.palette.background.paper, // Adaptable card background color
         }}
       >
         <Typography variant="h4" color="primary" gutterBottom>
           Create Account
         </Typography>
-        <Typography variant="subtitle1" color="textSecondary" gutterBottom>
+        <Typography variant="subtitle1" color="text.secondary" gutterBottom>
           Sign up to get started
         </Typography>
         <Box component="form" onSubmit={handleSignup} sx={{ mt: 3 }}>
@@ -59,6 +60,7 @@ const Signup = () => {
             margin="normal"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            sx={{ backgroundColor: theme.palette.background.paper }}
           />
           <TextField
             label="Password"
@@ -68,6 +70,7 @@ const Signup = () => {
             margin="normal"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            sx={{ backgroundColor: theme.palette.background.paper }}
           />
           <Button
             variant="contained"
