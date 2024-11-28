@@ -6,7 +6,7 @@ Status: ✅ Implemented using Firebase Authentication for signup and login.
 
 2- Daily Fitness Challenge Notification
 As a registered user, I want to receive a daily notification for the workout challenge so that I am reminded to complete it and stay on track with my fitness goals.
-Status: ❌ Not Implemented. We need to add functionality to send notifications, likely via Firebase Cloud Messaging.
+Status: ✅ Not Implemented. We need to add functionality to send notifications, likely via Firebase Cloud Messaging or SendGrid
 
 3- Goal Setting
 As a user, I want to set specific fitness goals (like weight loss, muscle gain, or increased endurance) so that I have a clear target to work towards.
@@ -42,4 +42,4 @@ Status: ❌ Not Implemented. We need to add the ability to bookmark or save spec
 
 11 - Dark Mode
 As a user, I want to be able to enable a dark mode on the web-application, so that I can work out at night without straining my eyes.
-Status: ❌ Not Implemented. We need to add the ability to toggle dark mode.
+Status: ✅ Not Implemented. We need to add the ability to toggle dark mode.
