@@ -6,6 +6,7 @@ import { auth, db } from './firebase';
 import { setDoc, doc, getDoc } from 'firebase/firestore';
 import { getWorkouts } from './workouts';
 import { Box, Paper, Typography, Button, Select, MenuItem, FormControl, InputLabel, Alert, List, ListItem, useTheme } from '@mui/material';
+import sendWorkoutEmail from './sendWorkoutEmail'; // Import the email function
 
 const Dashboard = () => {
   const theme = useTheme(); // Access theme for dark/light mode styles
@@ -45,6 +46,11 @@ const Dashboard = () => {
         // Generate a new workout recommendation
         const selectedWorkout = getWorkouts(difficulty);
         setWorkouts(selectedWorkout); // Set workout to be displayed
+
+        // Send the workout recommendation email
+        if (user.email){
+          await sendWorkoutEmail(user.email, selectedWorkout);
+        }
       } catch (err) {
         setError('Error setting goal. Please try again.');
       }
