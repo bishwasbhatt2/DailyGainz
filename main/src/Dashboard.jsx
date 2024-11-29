@@ -1,22 +1,23 @@
-// src/Dashboard.jsx
+// Dashboard.jsx
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { auth, db } from './firebase';
-import { setDoc, doc, getDoc } from 'firebase/firestore';
-import { getWorkouts } from './workouts';
-import { Box, Paper, Typography, Button, Select, MenuItem, FormControl, InputLabel, Alert, List, ListItem, useTheme } from '@mui/material';
-import sendWorkoutEmail from './sendWorkoutEmail'; // Import the email function
+import { auth, db } from './firebase'; // Ensure your firebase.js is properly configured
+import { setDoc, doc, getDoc, onSnapshot } from 'firebase/firestore';
+import {Box,Paper,Typography,Button,Select,MenuItem,FormControl,InputLabel,Alert,List,ListItem,useTheme,CircularProgress,} from '@mui/material';
 
 const Dashboard = () => {
-  const theme = useTheme(); // Access theme for dark/light mode styles
+  const theme = useTheme();
   const [user, setUser] = useState(null);
   const [difficulty, setDifficulty] = useState('');
   const [goal, setGoal] = useState(null);
   const [error, setError] = useState('');
-  const [workouts, setWorkouts] = useState([]); // State for workout recommendations
+  const [workouts, setWorkouts] = useState([]);
+  const [remainingTime, setRemainingTime] = useState(0); // Timer state in seconds
   const navigate = useNavigate();
 
+  // Handle user authentication and auto-fetch goals
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
@@ -26,6 +27,8 @@ const Dashboard = () => {
         if (goalDoc.exists()) {
           setGoal(goalDoc.data());
         }
+        // Listen to timer data
+        listenToTimer(currentUser.uid);
       } else {
         navigate('/login');
       }
@@ -33,33 +36,97 @@ const Dashboard = () => {
     return () => unsubscribe();
   }, [navigate]);
 
+  const listenToTimer = (userId) => {
+    const timerRef = doc(db, 'timers', userId); // Reference to the 'timers' collection
+
+    return onSnapshot(timerRef, (docSnapshot) => {
+      if (docSnapshot.exists()) {
+        const data = docSnapshot.data(); // Fetch data from the document
+        setWorkouts(data.workouts); // Update workouts state
+
+        const intervalMs = data.interval; // Interval in milliseconds
+        const startTimeMs = data.startTime.toMillis(); // Get Firestore timestamp in milliseconds
+
+        // Calculate remaining time dynamically
+        const calculateRemainingTime = () => {
+          const nowMs = Date.now(); // Get current time in milliseconds
+          const elapsedMs = nowMs - startTimeMs; // Calculate elapsed time
+          const remainingMs = intervalMs - elapsedMs; // Calculate remaining time
+          return Math.max(0, Math.ceil(remainingMs / 1000)); // Convert to seconds and ensure non-negative
+        };
+
+        // Initial calculation
+        setRemainingTime(calculateRemainingTime());
+
+        // Start a countdown that updates every second
+        const timerId = setInterval(() => {
+          const newRemaining = calculateRemainingTime();
+          setRemainingTime(newRemaining);
+
+          // Clear the interval when the timer reaches 0
+          if (newRemaining <= 0) {
+            clearInterval(timerId);
+          }
+        }, 1000);
+
+        return () => clearInterval(timerId); // Clean up interval on unmount
+      } else {
+        // If the timer document doesn't exist, reset the state
+        setRemainingTime(0);
+        setWorkouts([]);
+      }
+    });
+  };
+
   const handleGoalSubmit = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     if (user) {
       try {
         const goalRef = doc(db, 'goals', user.uid);
-        await setDoc(goalRef, { difficulty });
+        await setDoc(goalRef, { difficulty }); // Update the goals collection
+
         setGoal({ difficulty });
-        setDifficulty(''); // Clear difficulty after setting goal
+        setDifficulty('');
         setError('');
 
-        // Generate a new workout recommendation
-        const selectedWorkout = getWorkouts(difficulty);
-        setWorkouts(selectedWorkout); // Set workout to be displayed
+        // Call startTimer to reset the timer in the 'timers' collection
+        await startTimer(user.uid, user.email, difficulty);
 
-        // Send the workout recommendation email
-        if (user.email){
-          await sendWorkoutEmail(user.email, selectedWorkout);
-        }
+        // Refresh the page to reflect the changes
+        window.location.reload();
       } catch (err) {
+        console.error('Error setting goal:', err);
         setError('Error setting goal. Please try again.');
       }
+    }
+  };
+
+  // Function to call backend to start the timer
+  const startTimer = async (userId, email, difficulty) => {
+    try {
+      await fetch('http://localhost:5000/start-timer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, email, difficulty }),
+      });
+    } catch (err) {
+      console.error('Error starting timer:', err);
+      setError('Could not start timer. Please ensure the backend server is running.');
     }
   };
 
   const handleLogout = async () => {
     await signOut(auth);
     navigate('/login');
+  };
+
+  // Function to format remaining time into hours, minutes, and seconds
+  const formatRemainingTime = (seconds) => {
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+
+    return `${hrs}h ${mins}m ${secs}s`;
   };
 
   return (
@@ -140,10 +207,24 @@ const Dashboard = () => {
           )}
         </Box>
 
-        {goal && workouts.length > 0 && (
+        {goal && (
+          <Box sx={{ mt: 4 }}>
+            <Typography variant="h6">Next Workout Email In:</Typography>
+            <Typography variant="h4" color="primary">
+              {formatRemainingTime(remainingTime)}
+            </Typography>
+            <CircularProgress
+              variant="determinate"
+              value={(remainingTime / (24 * 60 * 60)) * 100}
+              sx={{ mt: 2 }}
+            />
+          </Box>
+        )}
+
+        {workouts.length > 0 && (
           <Box sx={{ mt: 4 }}>
             <Typography variant="h5" gutterBottom>
-              Recommended Workout
+              Your Workout:
             </Typography>
             <List>
               {workouts.map((workout, index) => (
