@@ -5,21 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { auth, db } from './firebase'; // Ensure your firebase.js is properly configured
 import { setDoc, doc, getDoc, onSnapshot } from 'firebase/firestore';
-import {
-  Box,
-  Paper,
-  Typography,
-  Button,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  Alert,
-  List,
-  ListItem,
-  useTheme,
-  CircularProgress,
-} from '@mui/material';
+import {Box,Paper,Typography,Button,Select,MenuItem,FormControl,InputLabel,Alert,List,ListItem,useTheme,CircularProgress,} from '@mui/material';
 
 const Dashboard = () => {
   const theme = useTheme();
