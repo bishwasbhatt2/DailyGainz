@@ -1,3 +1,4 @@
+// src/RewardsSystem.jsx
 import React, { useState, useEffect } from "react";
 import { doc, getDoc, updateDoc, setDoc } from "firebase/firestore";
 import { auth, db } from "./firebase"; // Import Firebase services
