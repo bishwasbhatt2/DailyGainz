@@ -34,7 +34,7 @@ const workouts = {
     '50 sit-ups',
     '30 push-ups',
     '45-minute jog',
-    '25 burpees',
+    '60 second side plank (each arm)',
     '10 pull-ups'
   ]
 };

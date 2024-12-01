@@ -1,3 +1,4 @@
+// App.jsx
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
@@ -8,8 +9,9 @@ import Login from './Login.jsx';
 import Dashboard from './Dashboard.jsx';
 import Leaderboard from './Leaderboard.jsx';
 import WorkoutCreation from './WorkoutCreation.jsx';
+import RewardsSystem from './RewardsSystem.jsx'; // Import RewardsSystem component
 
-function App() {
+const App = () => {
   const [darkMode, setDarkMode] = useState(false);
 
   // Define light theme
@@ -63,9 +65,12 @@ function App() {
       <CssBaseline />
       <Router>
         <div style={{ padding: '16px' }}>
-          <Button variant="contained" onClick={() => setDarkMode(!darkMode)}>
+          {/* Theme Toggle Button */}
+          <Button variant="contained" onClick={handleThemeToggle}>
             Toggle {darkMode ? 'Light' : 'Dark'} Mode
           </Button>
+
+          {/* Routes */}
           <Routes>
             <Route path="/" element={<Navigate to="/login" />} />
             <Route path="signup" element={<Signup />} />
@@ -73,11 +78,12 @@ function App() {
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="/leaderboard" element={<Leaderboard />} />
             <Route path="/workout-creation" element={<WorkoutCreation />} />
+            <Route path="/rewards" element={<RewardsSystem />} /> {/* Add route for RewardsSystem */}
           </Routes>
         </div>
       </Router>
     </ThemeProvider>
   );
-}
+};
 
 export default App;

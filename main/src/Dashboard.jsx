@@ -1,9 +1,8 @@
-// src/Dashboard.jsx
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { auth, db } from './firebase';
-import { setDoc, doc, getDoc } from 'firebase/firestore';
+import { setDoc, doc, getDoc, updateDoc } from 'firebase/firestore'; // Add updateDoc for Firestore updates
 import { getWorkouts } from './workouts';
 import { Box, Paper, Typography, Button, Select, MenuItem, FormControl, InputLabel, Alert, List, ListItem, useTheme } from '@mui/material';
 import sendWorkoutEmail from './sendWorkoutEmail'; // Import the email function
@@ -48,7 +47,7 @@ const Dashboard = () => {
         setWorkouts(selectedWorkout); // Set workout to be displayed
 
         // Send the workout recommendation email
-        if (user.email){
+        if (user.email) {
           await sendWorkoutEmail(user.email, selectedWorkout);
         }
       } catch (err) {
@@ -60,6 +59,37 @@ const Dashboard = () => {
   const handleLogout = async () => {
     await signOut(auth);
     navigate('/login');
+  };
+
+  // NEW FUNCTION: Add points to Firestore and update locally
+  const handleAddPoints = async (newPoints) => {
+    if (user) {
+      try {
+        const pointsRef = doc(db, 'points', user.uid);
+
+        // Fetch current points from Firestore
+        const pointsDoc = await getDoc(pointsRef);
+        let currentPoints = 0;
+
+        if (pointsDoc.exists()) {
+          currentPoints = pointsDoc.data().points || 0;
+        } else {
+          // If no document exists, initialize points
+          await setDoc(pointsRef, { points: 0 });
+        }
+
+        // Update Firestore with new points
+        const updatedPoints = currentPoints + newPoints;
+        await updateDoc(pointsRef, { points: updatedPoints });
+
+        console.log(`Points successfully updated to: ${updatedPoints}`);
+      } catch (err) {
+        console.error('Error updating points in Firestore:', err);
+        setError('Error updating points. Please try again.');
+      }
+    } else {
+      console.error('User not authenticated. Cannot add points.');
+    }
   };
 
   return (
@@ -103,6 +133,10 @@ const Dashboard = () => {
           </Button>
           <Button variant="outlined" color="primary" onClick={() => navigate('/workout-creation')}>
             Create Workout
+          </Button>
+          {/* New Rewards Button */}
+          <Button variant="outlined" color="primary" onClick={() => navigate('/rewards')}>
+            Rewards
           </Button>
         </Box>
 
