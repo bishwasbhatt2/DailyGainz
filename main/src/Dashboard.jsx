@@ -61,7 +61,7 @@ const Dashboard = () => {
     navigate('/login');
   };
 
-  // NEW FUNCTION: Add points to Firestore and update locally
+  // NEW FUNCTION: Add points to Firestore and update
   const handleAddPoints = async (newPoints) => {
     if (user) {
       try {

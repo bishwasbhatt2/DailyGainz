@@ -3,7 +3,7 @@ import { doc, getDoc, updateDoc, setDoc } from "firebase/firestore";
 import { auth, db } from "./firebase"; // Import Firebase services
 import { onAuthStateChanged } from "firebase/auth";
 
-
+// workouts
 const workouts = [
   { difficulty: "Easy", workout: "10 push-ups" },
   { difficulty: "Easy", workout: "20 sit-ups" },

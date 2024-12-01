@@ -9,7 +9,7 @@ import Login from './Login.jsx';
 import Dashboard from './Dashboard.jsx';
 import Leaderboard from './Leaderboard.jsx';
 import WorkoutCreation from './WorkoutCreation.jsx';
-import RewardsSystem from './RewardsSystem.jsx'; // Import RewardsSystem component
+import RewardsSystem from './RewardsSystem.jsx'; 
 
 const App = () => {
   const [darkMode, setDarkMode] = useState(false);

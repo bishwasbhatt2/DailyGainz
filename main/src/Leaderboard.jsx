@@ -3,7 +3,7 @@ import React from 'react';
 import { Box, Paper, Typography, Button, List, ListItem, ListItemText, ListItemIcon, useTheme } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
-
+// Leaderboard
 const fakeLeaderboardData = [
     { name: 'Gabriel Terry', points: 30000 },
     { name: 'John Doe', points: 1500 },
