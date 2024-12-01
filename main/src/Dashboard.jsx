@@ -1,23 +1,22 @@
 // Dashboard.jsx
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { auth, db } from './firebase'; // Ensure your firebase.js is properly configured
-import { setDoc, doc, getDoc, onSnapshot } from 'firebase/firestore';
-import {Box,Paper,Typography,Button,Select,MenuItem,FormControl,InputLabel,Alert,List,ListItem,useTheme,CircularProgress,} from '@mui/material';
+import { auth, db } from './firebase';
+import { setDoc, doc, getDoc, updateDoc } from 'firebase/firestore'; // Add updateDoc for Firestore updates
+import { getWorkouts } from './workouts';
+import { Box, Paper, Typography, Button, Select, MenuItem, FormControl, InputLabel, Alert, List, ListItem, useTheme } from '@mui/material';
+import sendWorkoutEmail from './sendWorkoutEmail'; // Import the email function
 
 const Dashboard = () => {
-  const theme = useTheme();
+  const theme = useTheme(); // Access theme for dark/light mode styles
   const [user, setUser] = useState(null);
   const [difficulty, setDifficulty] = useState('');
   const [goal, setGoal] = useState(null);
   const [error, setError] = useState('');
-  const [workouts, setWorkouts] = useState([]);
-  const [remainingTime, setRemainingTime] = useState(0); // Timer state in seconds
+  const [workouts, setWorkouts] = useState([]); // State for workout recommendations
   const navigate = useNavigate();
 
-  // Handle user authentication and auto-fetch goals
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
@@ -27,8 +26,6 @@ const Dashboard = () => {
         if (goalDoc.exists()) {
           setGoal(goalDoc.data());
         }
-        // Listen to timer data
-        listenToTimer(currentUser.uid);
       } else {
         navigate('/login');
       }
@@ -36,82 +33,27 @@ const Dashboard = () => {
     return () => unsubscribe();
   }, [navigate]);
 
-  const listenToTimer = (userId) => {
-    const timerRef = doc(db, 'timers', userId); // Reference to the 'timers' collection
-
-    return onSnapshot(timerRef, (docSnapshot) => {
-      if (docSnapshot.exists()) {
-        const data = docSnapshot.data(); // Fetch data from the document
-        setWorkouts(data.workouts); // Update workouts state
-
-        const intervalMs = data.interval; // Interval in milliseconds
-        const startTimeMs = data.startTime.toMillis(); // Get Firestore timestamp in milliseconds
-
-        // Calculate remaining time dynamically
-        const calculateRemainingTime = () => {
-          const nowMs = Date.now(); // Get current time in milliseconds
-          const elapsedMs = nowMs - startTimeMs; // Calculate elapsed time
-          const remainingMs = intervalMs - elapsedMs; // Calculate remaining time
-          return Math.max(0, Math.ceil(remainingMs / 1000)); // Convert to seconds and ensure non-negative
-        };
-
-        // Initial calculation
-        setRemainingTime(calculateRemainingTime());
-
-        // Start a countdown that updates every second
-        const timerId = setInterval(() => {
-          const newRemaining = calculateRemainingTime();
-          setRemainingTime(newRemaining);
-
-          // Clear the interval when the timer reaches 0
-          if (newRemaining <= 0) {
-            clearInterval(timerId);
-          }
-        }, 1000);
-
-        return () => clearInterval(timerId); // Clean up interval on unmount
-      } else {
-        // If the timer document doesn't exist, reset the state
-        setRemainingTime(0);
-        setWorkouts([]);
-      }
-    });
-  };
-
   const handleGoalSubmit = async (e) => {
-    if (e) e.preventDefault();
+    e.preventDefault();
     if (user) {
       try {
         const goalRef = doc(db, 'goals', user.uid);
-        await setDoc(goalRef, { difficulty }); // Update the goals collection
-
+        await setDoc(goalRef, { difficulty });
         setGoal({ difficulty });
-        setDifficulty('');
+        setDifficulty(''); // Clear difficulty after setting goal
         setError('');
 
-        // Call startTimer to reset the timer in the 'timers' collection
-        await startTimer(user.uid, user.email, difficulty);
+        // Generate a new workout recommendation
+        const selectedWorkout = getWorkouts(difficulty);
+        setWorkouts(selectedWorkout); // Set workout to be displayed
 
-        // Refresh the page to reflect the changes
-        window.location.reload();
+        // Send the workout recommendation email
+        if (user.email) {
+          await sendWorkoutEmail(user.email, selectedWorkout);
+        }
       } catch (err) {
-        console.error('Error setting goal:', err);
         setError('Error setting goal. Please try again.');
       }
-    }
-  };
-
-  // Function to call backend to start the timer
-  const startTimer = async (userId, email, difficulty) => {
-    try {
-      await fetch('http://localhost:5000/start-timer', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, email, difficulty }),
-      });
-    } catch (err) {
-      console.error('Error starting timer:', err);
-      setError('Could not start timer. Please ensure the backend server is running.');
     }
   };
 
@@ -120,13 +62,35 @@ const Dashboard = () => {
     navigate('/login');
   };
 
-  // Function to format remaining time into hours, minutes, and seconds
-  const formatRemainingTime = (seconds) => {
-    const hrs = Math.floor(seconds / 3600);
-    const mins = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
+  // NEW FUNCTION: Add points to Firestore and update locally
+  const handleAddPoints = async (newPoints) => {
+    if (user) {
+      try {
+        const pointsRef = doc(db, 'points', user.uid);
 
-    return `${hrs}h ${mins}m ${secs}s`;
+        // Fetch current points from Firestore
+        const pointsDoc = await getDoc(pointsRef);
+        let currentPoints = 0;
+
+        if (pointsDoc.exists()) {
+          currentPoints = pointsDoc.data().points || 0;
+        } else {
+          // If no document exists, initialize points
+          await setDoc(pointsRef, { points: 0 });
+        }
+
+        // Update Firestore with new points
+        const updatedPoints = currentPoints + newPoints;
+        await updateDoc(pointsRef, { points: updatedPoints });
+
+        console.log(`Points successfully updated to: ${updatedPoints}`);
+      } catch (err) {
+        console.error('Error updating points in Firestore:', err);
+        setError('Error updating points. Please try again.');
+      }
+    } else {
+      console.error('User not authenticated. Cannot add points.');
+    }
   };
 
   return (
@@ -211,24 +175,10 @@ const Dashboard = () => {
           )}
         </Box>
 
-        {goal && (
-          <Box sx={{ mt: 4 }}>
-            <Typography variant="h6">Next Workout Email In:</Typography>
-            <Typography variant="h4" color="primary">
-              {formatRemainingTime(remainingTime)}
-            </Typography>
-            <CircularProgress
-              variant="determinate"
-              value={(remainingTime / (24 * 60 * 60)) * 100}
-              sx={{ mt: 2 }}
-            />
-          </Box>
-        )}
-
-        {workouts.length > 0 && (
+        {goal && workouts.length > 0 && (
           <Box sx={{ mt: 4 }}>
             <Typography variant="h5" gutterBottom>
-              Your Workout:
+              Recommended Workout
             </Typography>
             <List>
               {workouts.map((workout, index) => (
@@ -245,3 +195,4 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+
