@@ -1,7 +1,7 @@
 Project Name: DailyGainz
 Github Repo: https://github.com/bishwasbhatt2/DailyGainz
 
-Tentative Description: An web-app that gives you random fitness challenges every day based on the category you choose: easy, medium, hard.
+Tentative Description: A web-app that gives you random fitness challenges every day based on the category you choose: easy, medium, hard.
 
 Current Features:
 * User account creation
