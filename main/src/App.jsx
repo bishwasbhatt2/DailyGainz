@@ -8,6 +8,7 @@ import Login from './Login.jsx';
 import Dashboard from './Dashboard.jsx';
 import Leaderboard from './Leaderboard.jsx';
 import WorkoutCreation from './WorkoutCreation.jsx';
+import RewardsSystem from './RewardsSystem.jsx';
 
 function App() {
   const [darkMode, setDarkMode] = useState(false);
@@ -73,6 +74,7 @@ function App() {
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="/leaderboard" element={<Leaderboard />} />
             <Route path="/workout-creation" element={<WorkoutCreation />} />
+            <Route path="/rewards" element={<RewardsSystem />} />
           </Routes>
         </div>
       </Router>

@@ -171,6 +171,9 @@ const Dashboard = () => {
           <Button variant="outlined" color="primary" onClick={() => navigate('/workout-creation')}>
             Create Workout
           </Button>
+          <Button variant="outlined" color="primary" onClick={() => navigate('/rewards')}>
+            Rewards
+          </Button>
         </Box>
 
         <Box sx={{ mt: 4 }}>
