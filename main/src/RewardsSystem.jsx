@@ -1,5 +1,7 @@
 // RewardsSystem.jsx
 import React, { useState, useEffect } from "react";
+import { Box, Typography, TextField, Button, Paper, List, ListItem, IconButton, useTheme } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
 import { doc, getDoc, updateDoc, setDoc } from "firebase/firestore";
 import { auth, db } from "./firebase"; // Import Firebase services
 import { onAuthStateChanged } from "firebase/auth";
@@ -48,6 +50,7 @@ const RewardsSystem = () => {
   const [dailyWorkout, setDailyWorkout] = useState(getRandomWorkout());
   const [points, setPoints] = useState(0);
   const [user, setUser] = useState(null);
+  const theme = useTheme(); // Access the current theme for dark/light mode support
 
   // Fetch user data and points on mount
   useEffect(() => {
@@ -100,35 +103,51 @@ const RewardsSystem = () => {
   };
 
   return (
-    <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
-      <h1>Daily Gainz - Rewards System</h1>
-      <div style={{ margin: "20px 0" }}>
-        <h2>Today's Workout</h2>
-        <p>
-          <strong>Workout:</strong> {dailyWorkout.workout}
-        </p>
-        <p>
-          <strong>Difficulty:</strong> {dailyWorkout.difficulty}
-        </p>
-      </div>
-      <button
-        onClick={handleFinish}
-        style={{
-          padding: "10px 20px",
-          fontSize: "16px",
-          cursor: "pointer",
-          backgroundColor: "#4CAF50",
-          color: "white",
-          border: "none",
-          borderRadius: "5px",
+    <Box
+      sx={{
+        minHeight: '100vh',
+        width: '100vw',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: theme.palette.background.default, // Adaptable background color
+        padding: '1rem',
+      }}
+    >
+      <Paper
+        elevation={4}
+        sx={{
+          width: '100%',
+          maxWidth: '600px',
+          padding: '2rem',
+          borderRadius: '10px',
+          backgroundColor: theme.palette.background.paper, // Adaptable card background color
+          textAlign: 'center',
         }}
       >
-        Finish
-      </button>
-      <div style={{ marginTop: "20px" }}>
-        <h2>Total Points: {points}</h2>
-      </div>
-    </div>
+          <Typography variant="h4" color="primary" gutterBottom>
+            Rewards System
+          </Typography>
+          
+          <Box sx={{ mt:4 }}>
+            <Typography variant="h5" gutterBottom>Today's Workout</Typography>
+              <Box sx={{gap: 2, mt:2}}><strong>Workout:</strong> {dailyWorkout.workout}</Box>
+              <Box sx={{gap: 2, mt:2}}><strong>Difficulty:</strong> {dailyWorkout.difficulty}</Box>
+          </Box>
+          
+          <Button
+            sx={{mt:4}}
+            onClick={handleFinish}
+            variant="contained"
+            color="primary"
+          >
+            Finish
+          </Button>
+          <Box sx={{mt:4}}>
+            <Typography variant="h5" gutterBottom>Total Points: {points}</Typography>
+          </Box>
+      </Paper>
+    </Box>
   );
 };
 
