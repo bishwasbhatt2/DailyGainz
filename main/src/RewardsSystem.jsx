@@ -1,6 +1,7 @@
 // RewardsSystem.jsx
 import React, { useState, useEffect } from "react";
-import { Box, Typography, TextField, Button, Paper, List, ListItem, IconButton, useTheme } from '@mui/material';
+import { Box, Typography, TextField, Button, Paper, List, ListItem, IconButton, useTheme, Dialog,
+  DialogTitle,DialogContent,DialogActions} from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { doc, getDoc, updateDoc, setDoc } from "firebase/firestore";
 import { auth, db } from "./firebase"; // Import Firebase services
@@ -51,6 +52,8 @@ const RewardsSystem = () => {
   const [points, setPoints] = useState(0);
   const [user, setUser] = useState(null);
   const theme = useTheme(); // Access the current theme for dark/light mode support
+  const [showNameDialog, setShowNameDialog] = useState(false);
+  const [name, setName] = useState("");
 
   // Fetch user data and points on mount
   useEffect(() => {
@@ -63,9 +66,15 @@ const RewardsSystem = () => {
         const pointsDoc = await getDoc(pointsRef);
         if (pointsDoc.exists()) {
           setPoints(pointsDoc.data().points || 0);
+          if (pointsDoc.data().name) {
+            setName(pointsDoc.data().name);
+          } else {
+            setShowNameDialog(true); // Prompt for name if it doesn't exist
+          }
         } else {
-          // Initialize points in Firestore if no document exists
+          // Initialize points and prompt for name
           await setDoc(pointsRef, { points: 0 });
+          setShowNameDialog(true);
         }
       }
     });
@@ -101,6 +110,23 @@ const RewardsSystem = () => {
     // Assign a new workout
     setDailyWorkout(getRandomWorkout());
   };
+
+    // Function to handle name submission
+    const handleNameSubmit = async () => {
+      if (name.trim()) {
+        if (user) {
+          try {
+            const pointsRef = doc(db, "points", user.uid);
+            await updateDoc(pointsRef, { name });
+            setShowNameDialog(false);
+          } catch (err) {
+            console.error("Error saving name to Firestore:", err);
+          }
+        }
+      } else {
+        alert("Name cannot be empty!");
+      }
+    };
 
   return (
     <Box
@@ -147,6 +173,25 @@ const RewardsSystem = () => {
             <Typography variant="h5" gutterBottom>Total Points: {points}</Typography>
           </Box>
       </Paper>
+      <Dialog open={showNameDialog}>
+        <DialogTitle>Leaderboard Name</DialogTitle>
+        <DialogContent>
+          <Box sx={{ mt: 2 }}>
+            Please enter your name to continue. This information will be used to display your rank in the leaderboard.
+          </Box>
+          <TextField
+            label="Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            fullWidth
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleNameSubmit} variant="contained" color="primary">
+            Submit
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
