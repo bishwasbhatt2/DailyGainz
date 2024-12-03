@@ -1,5 +1,10 @@
 // RewardsSystem.jsx
 import React, { useState, useEffect } from "react";
+import {
+  Box, Typography, TextField, Button, Paper, List, ListItem, IconButton, useTheme, Dialog,
+  DialogTitle, DialogContent, DialogActions
+} from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
 import { doc, getDoc, updateDoc, setDoc } from "firebase/firestore";
 import { auth, db } from "./firebase"; // Import Firebase services
 import { onAuthStateChanged } from "firebase/auth";
@@ -48,6 +53,17 @@ const RewardsSystem = () => {
   const [dailyWorkout, setDailyWorkout] = useState(getRandomWorkout());
   const [points, setPoints] = useState(0);
   const [user, setUser] = useState(null);
+  const theme = useTheme(); // Access the current theme for dark/light mode support
+  const [showNameDialog, setShowNameDialog] = useState(false);
+  const [name, setName] = useState("");
+  const [open, setOpen] = React.useState(false);
+  const earnedPoints = difficultyPoints[dailyWorkout.difficulty];
+  
+
+  const handleClose = () => {
+    setOpen(false);
+    setDailyWorkout(getRandomWorkout()); // Assign a new workout
+  };
 
   // Fetch user data and points on mount
   useEffect(() => {
@@ -60,9 +76,15 @@ const RewardsSystem = () => {
         const pointsDoc = await getDoc(pointsRef);
         if (pointsDoc.exists()) {
           setPoints(pointsDoc.data().points || 0);
+          if (pointsDoc.data().name) {
+            setName(pointsDoc.data().name);
+          } else {
+            setShowNameDialog(true); // Prompt for name if it doesn't exist
+          }
         } else {
-          // Initialize points in Firestore if no document exists
+          // Initialize points and prompt for name
           await setDoc(pointsRef, { points: 0 });
+          setShowNameDialog(true);
         }
       }
     });
@@ -75,16 +97,18 @@ const RewardsSystem = () => {
     return workouts[Math.floor(Math.random() * workouts.length)];
   }
 
-  // Function to handle finishing a workout
-  const handleFinish = async () => {
-    const earnedPoints = difficultyPoints[dailyWorkout.difficulty];
+  const handleFinish = () => {
+    // Update points and display award in shadow box
+    storePoints().then(() => {
+      setOpen(true); // Show the dialog after points are updated
+    });
+  };
+  
+  // Update the storePoints function to return a promise
+  const storePoints = async () => {
     const updatedPoints = points + earnedPoints;
-
-    // Update local points
     setPoints(updatedPoints);
-    alert(`You earned ${earnedPoints} points for completing ${dailyWorkout.workout}!`);
-
-    // Sync points with Firestore
+  
     if (user) {
       try {
         const pointsRef = doc(db, "points", user.uid);
@@ -94,43 +118,106 @@ const RewardsSystem = () => {
         console.error("Error updating points in Firestore:", err);
       }
     }
+  };
 
-    // Assign a new workout
-    setDailyWorkout(getRandomWorkout());
+  // Function to handle name submission
+  const handleNameSubmit = async () => {
+    if (name.trim()) {
+      if (user) {
+        try {
+          const pointsRef = doc(db, "points", user.uid);
+          await updateDoc(pointsRef, { name });
+          setShowNameDialog(false);
+        } catch (err) {
+          console.error("Error saving name to Firestore:", err);
+        }
+      }
+    } else {
+      alert("Name cannot be empty!");
+    }
   };
 
   return (
-    <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
-      <h1>Daily Gainz - Rewards System</h1>
-      <div style={{ margin: "20px 0" }}>
-        <h2>Today's Workout</h2>
-        <p>
-          <strong>Workout:</strong> {dailyWorkout.workout}
-        </p>
-        <p>
-          <strong>Difficulty:</strong> {dailyWorkout.difficulty}
-        </p>
-      </div>
-      <button
-        onClick={handleFinish}
-        style={{
-          padding: "10px 20px",
-          fontSize: "16px",
-          cursor: "pointer",
-          backgroundColor: "#4CAF50",
-          color: "white",
-          border: "none",
-          borderRadius: "5px",
+    <Box
+      sx={{
+        minHeight: '100vh',
+        width: '100vw',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: theme.palette.background.default, // Adaptable background color
+        padding: '1rem',
+      }}
+    >
+      <Paper
+        elevation={4}
+        sx={{
+          width: '100%',
+          maxWidth: '600px',
+          padding: '2rem',
+          borderRadius: '10px',
+          backgroundColor: theme.palette.background.paper, // Adaptable card background color
+          textAlign: 'center',
         }}
       >
-        Finish
-      </button>
-      <div style={{ marginTop: "20px" }}>
-        <h2>Total Points: {points}</h2>
-      </div>
-    </div>
+        <Typography variant="h4" color="primary" gutterBottom>
+          Rewards System
+        </Typography>
+
+        <Box sx={{ mt: 4 }}>
+          <Typography variant="h5" gutterBottom>Today's Workout</Typography>
+          <Box sx={{ gap: 2, mt: 2 }}><strong>Workout:</strong> {dailyWorkout.workout}</Box>
+          <Box sx={{ gap: 2, mt: 2 }}><strong>Difficulty:</strong> {dailyWorkout.difficulty}</Box>
+        </Box>
+
+        <Button
+          sx={{ mt: 4 }}
+          onClick={handleFinish}
+          variant="contained"
+          color="primary"
+        >
+          Finish
+        </Button>
+        <Box sx={{ mt: 4 }}>
+          <Typography variant="h5" gutterBottom>Total Points: {points}</Typography>
+        </Box>
+      </Paper>
+      <Dialog open={showNameDialog}>
+        <DialogTitle>Leaderboard Name</DialogTitle>
+        <DialogContent>
+          <Box sx={{ mt: 2 }}>
+            Please enter your name to continue. This information will be used to display your rank in the leaderboard.
+          </Box>
+          <TextField
+            label="Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            fullWidth
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleNameSubmit} variant="contained" color="primary">
+            Submit
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog open={open} onClose={handleClose}>
+        <DialogTitle>Great Job</DialogTitle>
+        <DialogContent>
+          <Box sx={{ mt: 2 }}>
+            <Typography>
+              You earned {earnedPoints} points for completing workout!
+            </Typography>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose} variant="contained" color="primary" autoFocus>
+            Okay
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Box>
   );
 };
 
 export default RewardsSystem;
-
