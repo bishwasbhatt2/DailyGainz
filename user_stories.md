@@ -22,7 +22,7 @@ Status: ❌ Not Implemented. We need to add a feature to share workouts and achi
 
 6- Friend Leaderboard
 As a competitive user, I want to view a leaderboard of my friends based on their workout challenge completions so that I can compare my progress and stay motivated to keep up with them.
-Status: ❌ Not Implemented. We need to implement a leaderboard that tracks progress among friends.
+Status: ✅ Implemented. We implemented a leaderboard that tracks progress among friends.
 
 7- Custom Workout Creation
 As a fitness expert, I want to create and share custom workout challenges so that I can challenge other users and offer tailored fitness routines.
@@ -34,7 +34,7 @@ Status: ❌ Not Implemented. We need to add messaging functionality between user
 
 9- Workout Completion Rewards
 As a motivated user, I want to earn badges or points for completing workout challenges so that I can feel a sense of accomplishment and continue using the app regularly.
-Status: ❌ Not Implemented. We need to add a gamification feature that rewards users for completing workouts.
+Status: ✅ Implemented. We need to add a point system
 
 10- Bookmark Favorite Activities
 As a user, I want to be able to save activities so that I can easily return to my favorite activities.
