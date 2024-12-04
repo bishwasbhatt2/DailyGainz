@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -9,9 +9,19 @@ import Dashboard from './Dashboard.jsx';
 import Leaderboard from './Leaderboard.jsx';
 import WorkoutCreation from './WorkoutCreation.jsx';
 import RewardsSystem from './RewardsSystem.jsx';
+import Cookies from 'js-cookie';
 
 function App() {
-  const [darkMode, setDarkMode] = useState(false);
+  // Initialize darkMode state from cookies
+  const [darkMode, setDarkMode] = useState(() => {
+    const savedMode = Cookies.get('darkMode');
+    return savedMode === 'true' || false;
+  });
+
+  // Update cookie whenever darkMode changes
+  useEffect(() => {
+    Cookies.set('darkMode', darkMode, { expires: 365 }); // Expires in 365 days
+  }, [darkMode]);
 
   // Define light theme
   const lightTheme = createTheme({
@@ -64,7 +74,7 @@ function App() {
       <CssBaseline />
       <Router>
         <div style={{ padding: '16px' }}>
-          <Button variant="contained" onClick={() => setDarkMode(!darkMode)}>
+          <Button variant="contained" onClick={handleThemeToggle}>
             Toggle {darkMode ? 'Light' : 'Dark'} Mode
           </Button>
           <Routes>
