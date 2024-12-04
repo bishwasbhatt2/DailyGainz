@@ -1,47 +1,11 @@
 // RewardsSystem.jsx
 import React, { useState, useEffect } from "react";
 import {
-  Box, Typography, TextField, Button, Paper, List, ListItem, IconButton, useTheme, Dialog,
-  DialogTitle, DialogContent, DialogActions
+  Box, Typography, Button, Paper, useTheme, Dialog, DialogTitle, DialogContent, DialogActions, TextField,
 } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import { doc, getDoc, updateDoc, setDoc } from "firebase/firestore";
-import { auth, db } from "./firebase"; // Import Firebase services
+import { doc, getDoc, updateDoc, setDoc, onSnapshot } from "firebase/firestore";
+import { auth, db } from "./firebase";
 import { onAuthStateChanged } from "firebase/auth";
-
-
-const workouts = [
-  { difficulty: "Easy", workout: "10 push-ups" },
-  { difficulty: "Easy", workout: "20 sit-ups" },
-  { difficulty: "Easy", workout: "15-minute jog" },
-  { difficulty: "Easy", workout: "30-second plank" },
-  { difficulty: "Easy", workout: "10 squats" },
-  { difficulty: "Easy", workout: "30 seconds high knees" },
-  { difficulty: "Easy", workout: "10 leg raises" },
-  { difficulty: "Easy", workout: "15 crunches" },
-  { difficulty: "Easy", workout: "10 lunges (both legs)" },
-  { difficulty: "Easy", workout: "15-second side plank (each arm)" },
-  { difficulty: "Medium", workout: "20 push-ups" },
-  { difficulty: "Medium", workout: "30 sit-ups" },
-  { difficulty: "Medium", workout: "30-minute jog" },
-  { difficulty: "Medium", workout: "60-second plank" },
-  { difficulty: "Medium", workout: "10 burpees" },
-  { difficulty: "Medium", workout: "20 squats" },
-  { difficulty: "Medium", workout: "20 lunges (both legs)" },
-  { difficulty: "Medium", workout: "30-second side plank (each arm)" },
-  { difficulty: "Medium", workout: "60-second jumping jacks" },
-  { difficulty: "Medium", workout: "100 jump ropes" },
-  { difficulty: "Hard", workout: "40-minute HIIT workout" },
-  { difficulty: "Hard", workout: "25 burpees" },
-  { difficulty: "Hard", workout: "20 jump squats" },
-  { difficulty: "Hard", workout: "200-300 jump ropes" },
-  { difficulty: "Hard", workout: "90-second plank" },
-  { difficulty: "Hard", workout: "50 sit-ups" },
-  { difficulty: "Hard", workout: "30 push-ups" },
-  { difficulty: "Hard", workout: "45-minute jog" },
-  { difficulty: "Hard", workout: "60 second side plank (each arm)" },
-  { difficulty: "Hard", workout: "10 pull-ups" },
-];
 
 const difficultyPoints = {
   Easy: 1,
@@ -50,19 +14,17 @@ const difficultyPoints = {
 };
 
 const RewardsSystem = () => {
-  const [dailyWorkout, setDailyWorkout] = useState(getRandomWorkout());
+  const theme = useTheme();
+  const [dailyWorkout, setDailyWorkout] = useState(null);
   const [points, setPoints] = useState(0);
   const [user, setUser] = useState(null);
-  const theme = useTheme(); // Access the current theme for dark/light mode support
+  const [workoutCompleted, setWorkoutCompleted] = useState(false);
   const [showNameDialog, setShowNameDialog] = useState(false);
   const [name, setName] = useState("");
-  const [open, setOpen] = React.useState(false);
-  const earnedPoints = difficultyPoints[dailyWorkout.difficulty];
-  
+  const [open, setOpen] = useState(false);
 
   const handleClose = () => {
     setOpen(false);
-    setDailyWorkout(getRandomWorkout()); // Assign a new workout
   };
 
   // Fetch user data and points on mount
@@ -71,18 +33,18 @@ const RewardsSystem = () => {
       if (currentUser) {
         setUser(currentUser);
 
-        // Fetch current points from Firestore
+        // Set up snapshot listener for workouts
+        listenToWorkout(currentUser.uid);
+
+        // Fetch current points
         const pointsRef = doc(db, "points", currentUser.uid);
         const pointsDoc = await getDoc(pointsRef);
         if (pointsDoc.exists()) {
           setPoints(pointsDoc.data().points || 0);
-          if (pointsDoc.data().name) {
-            setName(pointsDoc.data().name);
-          } else {
-            setShowNameDialog(true); // Prompt for name if it doesn't exist
+          if (!pointsDoc.data().name) {
+            setShowNameDialog(true);
           }
         } else {
-          // Initialize points and prompt for name
           await setDoc(pointsRef, { points: 0 });
           setShowNameDialog(true);
         }
@@ -92,23 +54,68 @@ const RewardsSystem = () => {
     return () => unsubscribe();
   }, []);
 
-  // Function to get a random workout
-  function getRandomWorkout() {
-    return workouts[Math.floor(Math.random() * workouts.length)];
-  }
+  // Function to listen to workout data from Firestore
+  const listenToWorkout = (userId) => {
+    const timerRef = doc(db, "timers", userId);
 
-  const handleFinish = () => {
-    // Update points and display award in shadow box
-    storePoints().then(() => {
-      setOpen(true); // Show the dialog after points are updated
+    const unsubscribe = onSnapshot(timerRef, (docSnapshot) => {
+      if (docSnapshot.exists()) {
+        const data = docSnapshot.data();
+
+        // Console log the data received from Firestore
+        console.log("Data from timers collection:", data);
+
+        if (data.workouts && data.workouts.length > 0) {
+          // Select a random workout and update the dailyWorkout state
+          const randomIndex = Math.floor(Math.random() * data.workouts.length);
+          const selectedWorkout = data.workouts[randomIndex];
+
+          // Console log the selected workout
+          console.log("Selected workout:", selectedWorkout);
+
+          setDailyWorkout({ workout: selectedWorkout, difficulty: data.difficulty });
+          setWorkoutCompleted(data.completed || false); // Set workout completion status from Firestore
+        } else {
+          console.log("No workouts found in timers collection.");
+          setDailyWorkout({ workout: "No workout available", difficulty: "N/A" });
+        }
+      } else {
+        console.log("Timer document does not exist for userId:", userId);
+        setDailyWorkout({ workout: "No workout available", difficulty: "N/A" });
+      }
     });
+
+    return unsubscribe; // Return unsubscribe function to clean up
   };
-  
+
+  const handleFinish = async () => {
+    if (!dailyWorkout) {
+      console.error("No daily workout to finish.");
+      return;
+    }
+
+    try {
+      // Update Firestore to mark workout as completed
+      const timerRef = doc(db, "timers", user.uid);
+      await updateDoc(timerRef, { completed: true });
+
+      // Update points and display award in dialog
+      await storePoints();
+      setWorkoutCompleted(true); // Update local state to reflect workout completion
+      setOpen(true);
+    } catch (err) {
+      console.error("Error marking workout as completed:", err);
+    }
+  };
+
   // Update the storePoints function to return a promise
   const storePoints = async () => {
+    if (!dailyWorkout) return;
+
+    const earnedPoints = difficultyPoints[dailyWorkout.difficulty] || 1;
     const updatedPoints = points + earnedPoints;
     setPoints(updatedPoints);
-  
+
     if (user) {
       try {
         const pointsRef = doc(db, "points", user.uid);
@@ -145,7 +152,7 @@ const RewardsSystem = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: theme.palette.background.default, // Adaptable background color
+        backgroundColor: theme.palette.background.default,
         padding: '1rem',
       }}
     >
@@ -156,7 +163,7 @@ const RewardsSystem = () => {
           maxWidth: '600px',
           padding: '2rem',
           borderRadius: '10px',
-          backgroundColor: theme.palette.background.paper, // Adaptable card background color
+          backgroundColor: theme.palette.background.paper,
           textAlign: 'center',
         }}
       >
@@ -165,9 +172,23 @@ const RewardsSystem = () => {
         </Typography>
 
         <Box sx={{ mt: 4 }}>
-          <Typography variant="h5" gutterBottom>Today's Workout</Typography>
-          <Box sx={{ gap: 2, mt: 2 }}><strong>Workout:</strong> {dailyWorkout.workout}</Box>
-          <Box sx={{ gap: 2, mt: 2 }}><strong>Difficulty:</strong> {dailyWorkout.difficulty}</Box>
+          <Typography variant="h5" gutterBottom>
+            Today's Workout
+          </Typography>
+          {dailyWorkout ? (
+            <>
+              <Typography variant="body1" color="text.secondary" gutterBottom>
+                Workout: <strong>{dailyWorkout.workout}</strong>
+              </Typography>
+              <Typography variant="body1" color="text.secondary" gutterBottom>
+                Difficulty: <strong>{dailyWorkout.difficulty}</strong>
+              </Typography>
+            </>
+          ) : (
+            <Typography variant="body1" sx={{ mt: 2 }}>
+              Loading workout...
+            </Typography>
+          )}
         </Box>
 
         <Button
@@ -175,13 +196,16 @@ const RewardsSystem = () => {
           onClick={handleFinish}
           variant="contained"
           color="primary"
+          disabled={workoutCompleted || !dailyWorkout || dailyWorkout.workout === "No workout available"}
         >
           Finish
         </Button>
+
         <Box sx={{ mt: 4 }}>
           <Typography variant="h5" gutterBottom>Total Points: {points}</Typography>
         </Box>
       </Paper>
+
       <Dialog open={showNameDialog}>
         <DialogTitle>Leaderboard Name</DialogTitle>
         <DialogContent>
@@ -201,12 +225,13 @@ const RewardsSystem = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
       <Dialog open={open} onClose={handleClose}>
         <DialogTitle>Great Job</DialogTitle>
         <DialogContent>
           <Box sx={{ mt: 2 }}>
             <Typography>
-              You earned {earnedPoints} points for completing workout!
+              You earned {difficultyPoints[dailyWorkout?.difficulty] || 1} points for completing the workout!
             </Typography>
           </Box>
         </DialogContent>
