@@ -7,13 +7,13 @@ import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyD8vx4RR-fhmJodogC-5Dk7V1GaYj4-R3w",
-  authDomain: "dailygainz-bf092.firebaseapp.com",
-  projectId: "dailygainz-bf092",
-  storageBucket: "dailygainz-bf092.appspot.com",
-  messagingSenderId: "4978893132",
-  appId: "1:4978893132:web:8219a7c2222f888914afe9",
-  measurementId: "G-5SY2ZVFKWR"
+  apiKey: "",
+  authDomain: "",
+  projectId: "",
+  storageBucket: "",
+  messagingSenderId: "",
+  appId: "",
+  measurementId: ""
 };
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
