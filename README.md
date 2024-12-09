@@ -4,18 +4,16 @@ Github Repo: https://github.com/bishwasbhatt2/DailyGainz
 Tentative Description: A web-app that gives you random fitness challenges every day based on the category you choose: easy, medium, hard.
 
 Current Features:
-* User account creation
-* User login
-* Difficulty settings
-* MaterialUI integration
-* Storing user goals in FireBaseDB
+* Custom Difficulty Settings
+* Custom Workout Creation
+* Automatic Email Notification
+* Leaderboards
+* Rewards System
+* Dark Mode
 
 Tools: 
 * Frontend: React
-* Backend: Firebase
+* Backend: Firebase, Node
 * Project Management Tool: Github Issues
 * Source-Control: GitHub
-* Deployment: GitHub Actions
-
-Stretch Goals:
-Gamification like badges
+* Deployment: N/A
